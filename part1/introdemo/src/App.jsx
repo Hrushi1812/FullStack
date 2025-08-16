@@ -1,15 +1,15 @@
-const Header = () => {
+const Header = ({ course }) => {
   return (
     <div>
-      <h1>Half Stack application development</h1>
+      <h1>{course}</h1>
     </div>
   )
 }
 
-const Part = ({ name, exercises }) => {
+const Part = (prop) => {
   return (
     <p>
-      {name} {exercises}
+      {prop.name} {prop.exercises}
     </p>
   )
 }
@@ -25,6 +25,7 @@ const Content = ({ part1, exercises1, part2, exercises2, part3, exercises3 }) =>
 }
 
 const App = () => {
+  const course = 'Half Stack application development'
   const part1 = 'Fundamentals of React'
   const exercises1 = 15
   const part2 = 'Using props to pass data'
