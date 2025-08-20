@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 const Header = () => <h1>give feedback</h1>
 
+
 const Statistics = ({ good, neutral, bad }) => {
   const all = good + neutral + bad
 
