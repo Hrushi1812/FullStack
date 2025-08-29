@@ -1,41 +1,36 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
-const Filter = ({ search, handleSearch }) => {
-  return (
+const Filter = ({ search, handleSearch }) => (
+  <div>
+    filter shown with <input value={search} onChange={handleSearch} />
+  </div>
+)
+
+const PersonForm = ({ addName, newName, handleNameChange, newNumber, handleNumberChange }) => (
+  <form onSubmit={addName}>
     <div>
-      filter shown with <input value={search} onChange={handleSearch} />
+      name: <input value={newName} onChange={handleNameChange} />
     </div>
-  )
-}
+    <div>
+      number: <input value={newNumber} onChange={handleNumberChange} />
+    </div>
+    <div>
+      <button type="submit">add</button>
+    </div>
+  </form>
+)
 
-const PersonForm = ({ addName, newName, handleNameChange, newNumber, handleNumberChange }) => {
-  return (
-    <form onSubmit={addName}>
-      <div>
-        name: <input value={newName} onChange={handleNameChange} />
-      </div>
-      <div>
-        number: <input value={newNumber} onChange={handleNumberChange} />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  )
-}
-
-const Persons = ({ personsToShow }) => {
-  return (
-    <ul>
-      {personsToShow.map(person => (
-        <li key={person.id}>
-          {person.name} {person.number}
-        </li>
-      ))}
-    </ul>
-  )
-}
+const Persons = ({ personsToShow, handleDelete }) => (
+  <ul>
+    {personsToShow.map(person => (
+      <li key={person.id}>
+        {person.name} {person.number}{' '}
+        <button onClick={() => handleDelete(person.id, person.name)}>delete</button>
+      </li>
+    ))}
+  </ul>
+)
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -44,35 +39,59 @@ const App = () => {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
-      .catch(error => {
-        console.error("Error fetching persons:", error)
-      })
+    personService.getAll().then(initialPersons => {
+      setPersons(initialPersons)
+    })
   }, [])
 
   const addName = (event) => {
     event.preventDefault()
 
-    const nameExists = persons.some(person => person.name === newName)
-    if (nameExists) {
-      alert(`${newName} is already added to the phonebook`)
+    const existingPerson = persons.find(p => p.name === newName)
+
+    if (existingPerson) {
+      if (window.confirm(`${newName} is already added, replace the old number with a new one?`)) {
+        const updatedPerson = { ...existingPerson, number: newNumber }
+
+        personService
+          .update(existingPerson.id, updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(p => p.id !== existingPerson.id ? p : returnedPerson))
+            setNewName('')
+            setNewNumber('')
+          })
+          .catch(() => {
+            alert(`Information of ${existingPerson.name} has already been removed from server`)
+            setPersons(persons.filter(p => p.id !== existingPerson.id))
+          })
+      }
       return
     }
 
     const nameObject = {
       name: newName,
       number: newNumber,
-      id: String(persons.length + 1),
     }
 
-    // for now just add locally
-    setPersons(persons.concat(nameObject))
-    setNewName('')
-    setNewNumber('')
+    personService.create(nameObject).then(newPerson => {
+      setPersons(persons.concat(newPerson))
+      setNewName('')
+      setNewNumber('')
+    })
+  }
+
+  const handleDelete = (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      personService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(p => p.id !== id))
+        })
+        .catch(() => {
+          alert(`The person '${name}' was already removed from server`)
+          setPersons(persons.filter(p => p.id !== id))
+        })
+    }
   }
 
   const personsToShow = persons.filter(person =>
@@ -94,7 +113,7 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <Persons personsToShow={personsToShow} />
+      <Persons personsToShow={personsToShow} handleDelete={handleDelete} />
     </div>
   )
 }
