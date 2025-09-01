@@ -9,11 +9,21 @@ const Weather = ({ country }) => {
 
   useEffect(() => {
     if (!country.capitalInfo || !country.capitalInfo.latlng) return;
+
     const [lat, lon] = country.capitalInfo.latlng;
     const url = `${WEATHER_API_URL}?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`;
+
+    console.log(`Calling weather API for ${country.capital} at ${lat},${lon}`);
+
     axios.get(url)
-      .then((response) => setWeather(response.data))
-      .catch((error) => setWeather(null));
+      .then((response) => {
+        console.log('Weather API call successful:', response.data);
+        setWeather(response.data)
+      })
+      .catch((error) => {
+        console.error('Weather API call failed:', error);
+        setWeather(null);
+      });
   }, [country]);
 
   if (!weather) {
