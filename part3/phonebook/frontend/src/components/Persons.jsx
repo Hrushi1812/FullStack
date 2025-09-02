@@ -1,11 +1,9 @@
-import React from 'react'
-
-const Persons = ({ personsToShow, handleDelete }) => (
+const Persons = ({ persons, onRemove }) => (
   <ul>
-    {personsToShow.map(person => (
-      <li key={person.id}>
+    {persons.map(person => (
+      <li key={person.name}>
         {person.name} {person.number}{' '}
-        <button onClick={() => handleDelete(person.id, person.name)}>delete</button>
+        <button onClick={() => onRemove(person)}>delete</button>
       </li>
     ))}
   </ul>
