@@ -1,0 +1,1 @@
+This part contains Blog list application
