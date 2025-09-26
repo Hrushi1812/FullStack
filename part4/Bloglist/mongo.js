@@ -15,14 +15,21 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema);
 
-const blog = new Blog({
-  title: 'My First Blog',
-  author: 'Hrushi',
-  url: 'http://example.com',
-  likes: 10,
-});
+// const blog = new Blog({
+//   title: 'My First Blog',
+//   author: 'Hrushi',
+//   url: 'http://example.com',
+//   likes: 10,
+// });
 
-blog.save().then(result => {
-  console.log('blog saved!')
+// blog.save().then(result => {
+//   console.log('blog saved!')
+//   mongoose.connection.close()
+// })
+
+Blog.find({}).then((result) => {
+  result.forEach((blog) => {
+    console.log(blog)
+  })
   mongoose.connection.close()
 })
