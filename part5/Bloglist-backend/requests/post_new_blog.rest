@@ -1,0 +1,11 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhydXNoaSIsImlkIjoiNjhkOTI4Y2QyMWZjNzlkZWY3MWM5ZWFjIiwiaWF0IjoxNzU5MDY5Mzk0fQ.VHpVjXRTd2E0Ia37NRy_IY96SfGhTF9GBSWltFeomuY
+
+{
+  "title": "One more test",
+  "author": "Mukesh",
+  "url": "http://example.com/new",
+  "likes": 51,
+  "userId": "68d928cd21fc79def71c9eac"
+}
