@@ -44,28 +44,28 @@ blogsRouter.delete('/:id', userExtractor, async (request, response) => {
   response.status(204).end()
 })
 
-blogsRouter.put('/:id', async (request, response) => {
-  const { id } = request.params
+blogsRouter.put('/:id', async (request, response, next) => {
   const body = request.body
 
-  // Build updated blog object
+  // Construct the updated blog object
   const updatedBlog = {
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes,
+    user: body.user // <- user ID only
   }
 
-  const savedBlog = await Blog.findByIdAndUpdate(id, updatedBlog, {
-    new: true,           
-    runValidators: true, 
-    context: 'query',
-  })
+  try {
+    const blog = await Blog.findByIdAndUpdate(
+      request.params.id,
+      updatedBlog,
+      { new: true, runValidators: true, context: 'query' }
+    ).populate('user', { username: 1, name: 1 }) // populate user info if needed
 
-  if (savedBlog) {
-    response.json(savedBlog)
-  } else {
-    response.status(404).end()
+    response.json(blog)
+  } catch (error) {
+    next(error)
   }
 })
 

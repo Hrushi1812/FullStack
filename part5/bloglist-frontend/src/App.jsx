@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -10,6 +11,8 @@ const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState({ message: null, type: null })
+
+  const blogFormRef = useRef() // Ref for toggling the BlogForm
 
   useEffect(() => {
     blogService.getAll().then(setBlogs)
@@ -46,8 +49,12 @@ const App = () => {
   const addBlog = async (blogObject) => {
     try {
       const returnedBlog = await blogService.create(blogObject)
+      if (!returnedBlog.user && user) {
+        returnedBlog.user = { id: user.id, name: user.name, username: user.username }
+      }
       setBlogs((prev) => prev.concat(returnedBlog))
       showNotification(`A new blog "${returnedBlog.title}" by ${returnedBlog.author} added!`, 'success')
+      blogFormRef.current.toggleVisibility()
     } catch {
       showNotification('Error creating blog', 'error')
     }
@@ -59,6 +66,17 @@ const App = () => {
       setNotification({ message: null, type: null })
     }, duration)
   }
+
+  const updateBlog = (updatedBlog) => {
+    setBlogs(blogs.map(blog =>
+      blog.id === updatedBlog.id ? updatedBlog : blog
+    ))
+  }
+
+  const removeBlog = (id) => {
+    setBlogs(blogs.filter(blog => blog.id !== id))
+  }
+
 
   if (user === null) {
     return (
@@ -80,11 +98,17 @@ const App = () => {
         <button onClick={handleLogout} style={{ marginLeft: '10px' }}>logout</button>
       </p>
 
-      <BlogForm createBlog={addBlog} />
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <BlogForm createBlog={addBlog} />
+      </Togglable>
 
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
-      )}
+      <h2>Blog List</h2>
+      {[...blogs]
+        .sort((a, b) => b.likes - a.likes)
+        .map(blog =>
+          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={user} />
+        )
+      }
     </div>
   )
 }
